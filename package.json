@@ -1,0 +1,21 @@
+{
+  "name": "ao-innovation-services-plus",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Site vitrine et back-office de AD INNOVATION SERVICES PLUS (Vue 3 + Supabase)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
+    "vue": "^3.5.43",
+    "vue-router": "^5.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.9",
+    "vite": "^8.3.2"
+  }
+}

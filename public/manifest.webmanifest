@@ -1,0 +1,51 @@
+{
+  "name": "AD INNOVATION SERVICES PLUS",
+  "short_name": "AD Innovation",
+  "description": "AD INNOVATION SERVICES PLUS — votre partenaire local : démarches administratives, électricité, réfrigération, cuisine & pâtisserie, traiteur, décoration, infographie, informatique, bureautique et vente de fournitures.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f7fb",
+  "theme_color": "#0b2545",
+  "categories": ["business", "utilities", "shopping"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Demander un devis",
+      "short_name": "Devis",
+      "description": "Décrivez votre besoin et recevez une proposition",
+      "url": "/devis",
+      "icons": [{ "src": "/icons/icon-192.jpg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Nos services",
+      "short_name": "Services",
+      "description": "Consulter le catalogue complet",
+      "url": "/services",
+      "icons": [{ "src": "/icons/icon-192.jpg", "sizes": "192x192" }]
+    }
+  ]
+}
