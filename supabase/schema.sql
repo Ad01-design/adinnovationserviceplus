@@ -19,6 +19,41 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------------
+--  Autorisation administrateur.
+--
+--  `authenticated` signifie simplement « possède une session valide », ce qui
+--  n'est PAS la même chose que « administrateur ». On restreint donc toutes les
+--  écritures (et les lectures sensibles) à une liste blanche d'utilisateurs
+--  enregistrés dans public.admins.
+--
+--  Pour désigner un administrateur :
+--      insert into public.admins (user_id)
+--      select id from auth.users where email = 'vous@exemple.com';
+-- ---------------------------------------------------------------------------
+create table if not exists public.admins (
+  user_id    uuid primary key references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
+-- La table elle-même est protégée : RLS activée, aucune policy → inaccessible
+-- via l'API avec la clé anon. Seul le SQL Editor (service role) peut la gérer.
+alter table public.admins enable row level security;
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.admins a where a.user_id = auth.uid()
+  );
+$$;
+
+grant execute on function public.is_admin() to anon, authenticated;
+
 -- ===========================================================================
 --  1. SERVICES
 -- ===========================================================================
@@ -47,15 +82,18 @@ create trigger services_touch_updated_at
 
 alter table public.services enable row level security;
 
+-- Lecture publique (catalogue affiché sur le site).
 drop policy if exists "services_read_all" on public.services;
 create policy "services_read_all"
   on public.services for select
   using (true);
 
+-- Écriture réservée aux administrateurs.
 drop policy if exists "services_write_authenticated" on public.services;
-create policy "services_write_authenticated"
+drop policy if exists "services_write_admin" on public.services;
+create policy "services_write_admin"
   on public.services for all to authenticated
-  using (true) with check (true);
+  using (public.is_admin()) with check (public.is_admin());
 
 -- ===========================================================================
 --  2. MESSAGES (formulaire de contact)
@@ -75,26 +113,40 @@ create index if not exists messages_created_idx on public.messages (created_at d
 
 alter table public.messages enable row level security;
 
+-- Insertion publique (formulaire de contact) avec garde-fous : on limite la
+-- taille des champs et on impose le statut initial, pour empêcher un visiteur
+-- malveillant d'injecter des statuts arbitraires ou des contenus démesurés.
 drop policy if exists "messages_insert_public" on public.messages;
 create policy "messages_insert_public"
   on public.messages for insert
   to anon, authenticated
-  with check (true);
+  with check (
+    char_length(coalesce(name, ''))    between 1 and 200
+    and char_length(coalesce(message, '')) between 1 and 5000
+    and char_length(coalesce(email, ''))   <= 320
+    and char_length(coalesce(phone, ''))   <= 40
+    and char_length(coalesce(subject, '')) <= 200
+    and status = 'nouveau'
+  );
 
+-- Lecture / modification / suppression réservées aux administrateurs.
 drop policy if exists "messages_read_authenticated" on public.messages;
-create policy "messages_read_authenticated"
+drop policy if exists "messages_read_admin" on public.messages;
+create policy "messages_read_admin"
   on public.messages for select
-  to authenticated using (true);
+  to authenticated using (public.is_admin());
 
 drop policy if exists "messages_update_authenticated" on public.messages;
-create policy "messages_update_authenticated"
+drop policy if exists "messages_update_admin" on public.messages;
+create policy "messages_update_admin"
   on public.messages for update
-  to authenticated using (true) with check (true);
+  to authenticated using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists "messages_delete_authenticated" on public.messages;
-create policy "messages_delete_authenticated"
+drop policy if exists "messages_delete_admin" on public.messages;
+create policy "messages_delete_admin"
   on public.messages for delete
-  to authenticated using (true);
+  to authenticated using (public.is_admin());
 
 -- ===========================================================================
 --  3. DEVIS (demandes de devis)
@@ -117,26 +169,40 @@ create index if not exists quotes_created_idx on public.quotes (created_at desc)
 
 alter table public.quotes enable row level security;
 
+-- Insertion publique (demande de devis) avec garde-fous de taille/statut.
 drop policy if exists "quotes_insert_public" on public.quotes;
 create policy "quotes_insert_public"
   on public.quotes for insert
   to anon, authenticated
-  with check (true);
+  with check (
+    char_length(coalesce(name, ''))    between 1 and 200
+    and char_length(coalesce(phone, '')) between 1 and 40
+    and char_length(coalesce(service, '')) between 1 and 200
+    and char_length(coalesce(email, ''))   <= 320
+    and char_length(coalesce(city, ''))    <= 200
+    and char_length(coalesce(budget, ''))  <= 200
+    and char_length(coalesce(details, '')) <= 5000
+    and status = 'nouveau'
+  );
 
+-- Lecture / modification / suppression réservées aux administrateurs.
 drop policy if exists "quotes_read_authenticated" on public.quotes;
-create policy "quotes_read_authenticated"
+drop policy if exists "quotes_read_admin" on public.quotes;
+create policy "quotes_read_admin"
   on public.quotes for select
-  to authenticated using (true);
+  to authenticated using (public.is_admin());
 
 drop policy if exists "quotes_update_authenticated" on public.quotes;
-create policy "quotes_update_authenticated"
+drop policy if exists "quotes_update_admin" on public.quotes;
+create policy "quotes_update_admin"
   on public.quotes for update
-  to authenticated using (true) with check (true);
+  to authenticated using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists "quotes_delete_authenticated" on public.quotes;
-create policy "quotes_delete_authenticated"
+drop policy if exists "quotes_delete_admin" on public.quotes;
+create policy "quotes_delete_admin"
   on public.quotes for delete
-  to authenticated using (true);
+  to authenticated using (public.is_admin());
 
 -- ===========================================================================
 --  4. PARAMÈTRES DU SITE (clé / valeur)
@@ -154,10 +220,13 @@ create policy "settings_read_all"
   on public.site_settings for select
   using (true);
 
+-- Attention : cette table est lisible publiquement — n'y stockez JAMAIS de
+-- secret (clé API, mot de passe, e-mail privé, etc.).
 drop policy if exists "settings_write_authenticated" on public.site_settings;
-create policy "settings_write_authenticated"
+drop policy if exists "settings_write_admin" on public.site_settings;
+create policy "settings_write_admin"
   on public.site_settings for all to authenticated
-  using (true) with check (true);
+  using (public.is_admin()) with check (public.is_admin());
 
 -- ===========================================================================
 --  5. ÉQUIPE
@@ -189,9 +258,10 @@ create policy "team_read_all"
   using (true);
 
 drop policy if exists "team_write_authenticated" on public.team;
-create policy "team_write_authenticated"
+drop policy if exists "team_write_admin" on public.team;
+create policy "team_write_admin"
   on public.team for all to authenticated
-  using (true) with check (true);
+  using (public.is_admin()) with check (public.is_admin());
 
 -- ===========================================================================
 --  6. RÉALISATIONS (portfolio)
@@ -223,9 +293,10 @@ create policy "realisations_read_all"
   using (true);
 
 drop policy if exists "realisations_write_authenticated" on public.realisations;
-create policy "realisations_write_authenticated"
+drop policy if exists "realisations_write_admin" on public.realisations;
+create policy "realisations_write_admin"
   on public.realisations for all to authenticated
-  using (true) with check (true);
+  using (public.is_admin()) with check (public.is_admin());
 
 -- ===========================================================================
 --  7. DONNÉES DE DÉPART

@@ -24,18 +24,38 @@ every request fails with an explicit "Supabase n'est pas configuré" error.
    Row Level Security and inserts the seed data (16 services + contact details).
 3. Create your admin user: **Authentication → Users → Add user**. Use that email/password to sign in
    at `/connexion`.
-4. Copy the config:
+4. **Grant that user admin rights.** A valid session alone is *not* enough — writes are restricted to
+   the allowlist in `public.admins`. In **SQL Editor**, run:
+
+   ```sql
+   insert into public.admins (user_id)
+   select id from auth.users where email = 'vous@exemple.com';
+   ```
+
+5. **Decide who may sign up.** The app exposes a `/inscription` page (public sign-up). If you want
+   to keep account creation private, turn off *Enable sign ups* in
+   **Authentication → Providers → Email** and create users from the dashboard instead.
+   > Security note: a new account is **not** an admin by itself. Admins are the users listed in
+   > `public.admins` (step 4). Anyone who signs up can log in but cannot write to the database
+   > until you add them to that allowlist.
+6. Copy the config:
 
    ```bash
    cp .env.example .env
    ```
 
    Fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (found in
-   **Project Settings → API**). The anon key is safe to expose in the browser.
-5. Restart the dev server (`npm run dev`) — you are now reading live data.
+   **Project Settings → API**). The anon key is safe to expose in the browser **only because RLS is
+   enabled** — never put the `service_role` key in `VITE_*` variables.
+7. Restart the dev server (`npm run dev`) — you are now reading live data.
 
-Security model (from `schema.sql`): visitors can read services/settings and **insert** messages and
-quotes, but only a logged-in admin can read/update/delete them.
+Security model (from `schema.sql`):
+
+- visitors (`anon`) can **read** services, site settings, team and portfolio, and **insert** messages
+  and quotes — with length/status guards so public inserts cannot forge a status or flood huge rows;
+- everything else (reading messages/quotes, all create/update/delete on content) requires membership
+  of `public.admins`, checked by the `public.is_admin()` function;
+- there is **no public registration** in the app.
 
 ## 3. Pages
 
@@ -46,6 +66,7 @@ quotes, but only a logged-in admin can read/update/delete them.
 | `/contact`   | Contact form → `messages` table, plus phone/WhatsApp/email tiles     |
 | `/devis`     | Quote request form → `quotes` table (pre-fillable from a service)    |
 | `/connexion` | Admin login (Supabase Auth)                                          |
+| `/inscription` | Sign-up page (creates a Supabase Auth account)                     |
 | `/admin`     | Dashboard, quotes, messages, service CRUD, site settings             |
 
 Mobile: the header collapses into a slide-in side drawer (hamburger → overlay + right-hand panel).

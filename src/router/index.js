@@ -34,10 +34,10 @@ const routes = [
     meta: { title: 'Connexion' },
   },
   {
-    // Inscription publique supprimée pour des raisons de sécurité : la création
-    // de comptes se fait uniquement côté Supabase (dashboard > Authentication).
     path: '/inscription',
-    redirect: { name: 'connexion' },
+    name: 'inscription',
+    component: () => import('@/views/SignUpView.vue'),
+    meta: { title: 'Créer un compte' },
   },
   {
     path: '/admin',
