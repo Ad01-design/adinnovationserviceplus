@@ -310,6 +310,11 @@ img {
   align-items: center;
   gap: 18px;
   min-height: 74px;
+  /* `.container` déclare `overflow-x: hidden`, ce qui transforme aussi l'axe
+     vertical en zone de rognage : les menus déroulants (langue, installation)
+     étaient coupés dès qu'ils dépassaient la hauteur de la barre.
+     La barre de navigation ne défile pas : on peut laisser déborder. */
+  overflow: visible;
 }
 
 .brand {
@@ -603,106 +608,147 @@ img {
   font-weight: 600;
 }
 
-/* Carte d'installation affichée dans le hero (voir PwaInstallCard.vue).
-   Fond bleu très clair, icône posée sur une pastille blanche, bouton plein. */
-.pwa-install {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 30px;
-  padding: 16px 18px;
-  border-radius: 20px;
-  background: #e9f0fa;
-  border: 1px solid #d6e1f1;
-  box-shadow: 0 20px 40px -28px rgba(6, 26, 51, 0.5);
-}
-
-.pwa-install__icon {
+/* Petit menu d'installation depuis la barre de navigation (voir PwaMenu.vue).
+   Le bouton n'existe que dans un navigateur : une fois l'app installée,
+   le composant ne se monte plus. */
+.pwa-menu {
+  position: relative;
   flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  border-radius: 13px;
-  background: #fff;
-  color: var(--navy-600);
-  box-shadow: 0 8px 18px -10px rgba(6, 26, 51, 0.55);
 }
 
-.pwa-install__text {
-  flex: 1;
-  min-width: 0;
-}
-
-.pwa-install__text strong {
-  display: block;
+.pwa-menu__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(11, 37, 69, 0.12);
+  border-radius: 10px;
+  background: transparent;
   color: var(--navy-800);
-  font-size: 1.05rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.pwa-install__text p {
-  margin: 3px 0 0;
-  color: var(--text-muted);
-  font-size: 0.9rem;
+.pwa-menu__btn:hover {
+  background: rgba(11, 37, 69, 0.06);
+  border-color: rgba(11, 37, 69, 0.22);
+}
+
+/* Dans la barre : icône seule (le libellé reste dans l'aria-label). */
+.pwa-menu--dropdown .pwa-menu__btn-label {
+  display: none;
+}
+
+.pwa-menu__panel {
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #dadce0;
+  box-shadow: 0 12px 32px -12px rgba(6, 26, 51, 0.35);
+  text-align: left;
+}
+
+.pwa-menu--dropdown .pwa-menu__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 60;
+  width: 280px;
+  max-width: calc(100vw - 32px);
+}
+
+.pwa-menu--inline {
+  width: 100%;
+}
+
+.pwa-menu--inline .pwa-menu__btn {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--navy-800);
+  border-color: var(--navy-800);
+  color: #fff;
+  font-weight: 600;
+}
+
+.pwa-menu--inline .pwa-menu__btn:hover {
+  background: var(--navy-600);
+  border-color: var(--navy-600);
+}
+
+.pwa-menu--inline .pwa-menu__panel {
+  margin-top: 10px;
+  padding: 14px;
+}
+
+.pwa-menu__panel strong {
+  display: block;
+  color: #202124;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.pwa-menu__panel p {
+  margin: 4px 0 0;
+  color: #5f6368;
+  font-size: 0.82rem;
   line-height: 1.45;
 }
 
-.pwa-install__cta {
-  flex-shrink: 0;
-  padding: 12px 26px;
+/* Petit bouton : il se dimensionne sur son texte au lieu de remplir la carte. */
+.pwa-menu__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  padding: 8px 18px;
   border: 0;
-  border-radius: 12px;
-  background: var(--navy-600);
+  border-radius: 999px;
+  background: #1a73e8;
   color: #fff;
   font: inherit;
+  font-size: 0.82rem;
   font-weight: 700;
-  font-size: 0.95rem;
   cursor: pointer;
-  box-shadow: 0 16px 28px -16px rgba(28, 78, 136, 0.95);
-  transition: transform 0.15s ease, background 0.2s ease;
+  transition: background 0.15s ease;
 }
 
-.pwa-install__cta:hover {
-  background: var(--navy-700);
-  transform: translateY(-1px);
+.pwa-menu__cta:hover {
+  background: #1765cc;
 }
 
-.pwa-install__close {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: #8595ad;
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: color 0.15s ease, background 0.2s ease;
+/* Dans le tiroir, le bouton s'aligne sur la largeur des autres actions. */
+.pwa-menu--inline .pwa-menu__cta {
+  width: 100%;
 }
 
-.pwa-install__close:hover {
-  color: var(--navy-800);
-  background: rgba(11, 37, 69, 0.07);
+.pwa-menu__hint {
+  margin-top: 10px;
 }
 
-/* Sur téléphone : le bouton passe sous le texte, en pleine largeur. */
-@media (max-width: 620px) {
-  .pwa-install {
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 14px;
+/* Téléphone : l'icône n'est pas le dernier élément de la barre (le sélecteur de
+   langue et le bouton ☰ la suivent), donc un panneau ancré sur elle sortait de
+   l'écran par la gauche — d'environ la largeur de ces deux boutons. On le
+   rattache au bord droit de la fenêtre, juste sous la barre collante.
+   Les valeurs sont en dur et non en pourcentage : `position: fixed` doit donner
+   le même résultat que la barre soit ou non le bloc conteneur. */
+@media (max-width: 520px) {
+  .pwa-menu--dropdown .pwa-menu__panel {
+    position: fixed;
+    top: 84px; /* barre de navigation (74px) + 10px de gouttière */
+    right: 12px;
   }
+}
 
-  .pwa-install__close {
-    order: 2;
-  }
+.pop-enter-active,
+.pop-leave-active {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
 
-  .pwa-install__cta {
-    order: 3;
-    flex-basis: 100%;
-    padding: 13px 20px;
-  }
+.pop-enter-from,
+.pop-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 .pwa-enter-active,
@@ -2795,14 +2841,13 @@ table.data .select {
     min-width: auto;
   }
 
-  /* Fix PWA install card */
-  .pwa-install {
-    flex-direction: column;
-    text-align: center;
+  /* Fix PWA install menu (le panneau reste lisible sur petit écran) */
+  .pwa-menu__panel {
+    padding: 14px;
   }
 
-  .pwa-install__cta {
-    width: 100%;
+  .pwa-menu--dropdown .pwa-menu__panel {
+    width: min(280px, calc(100vw - 32px));
   }
 
   /* Fix footer on mobile */

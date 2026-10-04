@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import LangSwitcher from '@/components/LangSwitcher.vue'
+import PwaMenu from '@/components/PwaMenu.vue'
 import logoUrl from '@/assets/logo.jpg'
 import { useAuth } from '@/composables/useAuth'
 import { useSettings } from '@/composables/useSettings'
@@ -87,6 +88,8 @@ onBeforeUnmount(() => {
       </nav>
 
       <div class="header-actions">
+        <PwaMenu />
+
         <LangSwitcher />
 
         <RouterLink
@@ -194,6 +197,8 @@ onBeforeUnmount(() => {
               <span aria-hidden="true">🚪</span>
               {{ t('common.logout') }}
             </button>
+
+            <PwaMenu variant="inline" />
 
             <LangSwitcher class="lang-switch--full" />
 

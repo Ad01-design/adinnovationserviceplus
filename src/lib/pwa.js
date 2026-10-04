@@ -3,26 +3,24 @@
  *
  * - Enregistre le service worker après le chargement, pour ne pas concurrencer
  *   les ressources critiques sur une connexion lente.
- * - Capture l'événement d'installation d'Android/Chrome pour proposer un bouton.
+ * - Capture l'événement d'installation d'Android/Chrome pour proposer l'entrée
+ *   « Télécharger » du menu de navigation.
  * - Sur iOS Safari cet événement n'existe pas : on affiche la marche à suivre.
  */
 import { computed, ref } from 'vue'
-
-const DISMISS_KEY = 'ao.install.dismissed'
 
 export const online = ref(typeof navigator === 'undefined' ? true : navigator.onLine)
 export const canInstall = ref(false)
 export const installed = ref(false)
 
-let deferredPrompt = null
+/**
+ * Aperçu du menu d'installation pour le design : `?installCard=chrome`
+ * (menu avec bouton d'installation) ou `?installCard=ios` (variante iOS).
+ * Sans ces paramètres, l'option ne s'active que là où le navigateur l'autorise.
+ */
+export const previewIos = ref(false)
 
-function readDismiss() {
-  try {
-    return Number(localStorage.getItem(DISMISS_KEY) || 0)
-  } catch {
-    return 0
-  }
-}
+let deferredPrompt = null
 
 export function initPwa() {
   if (typeof window === 'undefined') return
@@ -32,6 +30,10 @@ export function initPwa() {
   }
   window.addEventListener('online', update)
   window.addEventListener('offline', update)
+
+  const mode = new URLSearchParams(window.location.search).get('installCard')
+  if (mode === 'chrome') canInstall.value = true
+  if (mode === 'ios') previewIos.value = true
 
   const standalone =
     window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true
@@ -46,8 +48,7 @@ export function initPwa() {
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault()
     deferredPrompt = event
-    // Sept jours de répit avant de réafficher la même invitation.
-    if (Date.now() - readDismiss() > 7 * 24 * 60 * 60 * 1000) canInstall.value = true
+    canInstall.value = true
   })
 
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
@@ -61,6 +62,7 @@ export function initPwa() {
 
 export const isIosSafari = computed(() => {
   if (typeof navigator === 'undefined') return false
+  if (previewIos.value) return !installed.value
   return (
     /iphone|ipad|ipod/i.test(navigator.userAgent) &&
     !window.MSStream &&
@@ -76,13 +78,4 @@ export async function promptInstall() {
   event.prompt()
   const { outcome } = await event.userChoice
   return outcome === 'accepted'
-}
-
-export function dismissInstall() {
-  canInstall.value = false
-  try {
-    localStorage.setItem(DISMISS_KEY, String(Date.now()))
-  } catch {
-    /* stockage indisponible */
-  }
 }

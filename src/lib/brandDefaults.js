@@ -10,6 +10,13 @@
  * réalisations — restent, elles, exclusivement en base.
  */
 
+/**
+ * Nom court de l'application, utilisé dans l'invitation à installer
+ * (« Installez l'app AD Innovation »). Doit rester identique à `short_name`
+ * de public/manifest.webmanifest.
+ */
+export const APP_SHORT_NAME = 'AD Innovation'
+
 export const BRAND_DEFAULTS = {
   brand_name: 'AD INNOVATION SERVICES PLUS',
   tagline: 'Votre partenaire local pour un travail efficace et durable.',

@@ -3,7 +3,6 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import ServiceCard from '@/components/ServiceCard.vue'
 import SectionHeading from '@/components/SectionHeading.vue'
 import ContactSection from '@/components/ContactSection.vue'
-import PwaInstallCard from '@/components/PwaInstallCard.vue'
 import { useServices } from '@/composables/useServices'
 import { useSettings } from '@/composables/useSettings'
 import { useI18n } from '@/i18n'
@@ -259,8 +258,6 @@ onBeforeUnmount(() => {
             </ul>
           </aside>
         </div>
-
-        <PwaInstallCard />
       </div>
     </section>
 

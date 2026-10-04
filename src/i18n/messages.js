@@ -41,12 +41,14 @@ const fr = {
   },
 
   pwa: {
-    installTitle: 'Installez l’application',
+    installTitle: 'Installez l’app {app}',
     installText:
       'Pour un accès plus rapide, ajoutez notre app à votre écran d’accueil.',
     install: 'Installer',
     iosHint: 'Appuyez sur Partager puis « Sur l’écran d’accueil ».',
     offline: 'Vous êtes hors ligne — le catalogue reste consultable.',
+    menuLabel: 'Installer l’application',
+    download: 'Télécharger',
   },
 
   home: {
@@ -144,7 +146,8 @@ const fr = {
     phone: 'Téléphone / WhatsApp',
     email: 'E-mail',
     city: 'Ville / quartier',
-    cityPlaceholder: 'Ex. Godomey',
+
+    cityPlaceholder: 'Ex. Ouanaminthe, Manquette',
     service: 'Service souhaité',
     serviceChoose: '— Choisir —',
     budget: 'Budget estimé',
@@ -420,11 +423,13 @@ const en = {
   },
 
   pwa: {
-    installTitle: 'Install the app',
+    installTitle: 'Install the {app} app',
     installText: 'For faster access, add our app to your home screen.',
     install: 'Install',
     iosHint: 'Tap Share, then “Add to Home Screen”.',
     offline: 'You are offline — the catalogue stays browsable.',
+    menuLabel: 'Install app',
+    download: 'Download',
   },
 
   home: {
@@ -522,7 +527,7 @@ const en = {
     phone: 'Phone / WhatsApp',
     email: 'E-mail',
     city: 'City / district',
-    cityPlaceholder: 'e.g. Godomey',
+    cityPlaceholder: 'Ex. Godomey',
     service: 'Service needed',
     serviceChoose: '— Select —',
     budget: 'Estimated budget',
@@ -796,11 +801,13 @@ const ht = {
   },
 
   pwa: {
-    installTitle: 'Enstale aplikasyon an',
+    installTitle: 'Enstale aplikasyon {app} la',
     installText: 'Pou yon aksè pi rapid, mete aplikasyon an sou ekran dakèy ou.',
     install: 'Enstale',
     iosHint: 'Peze bouton Pataje a, apre sa chwazi « Sou ekran dakèy la ».',
     offline: 'Ou pa gen koneksyon — ou ka toujou gade katalòg la.',
+    menuLabel: 'Enstale aplikasyon an',
+    download: 'Telechaje',
   },
 
   home: {

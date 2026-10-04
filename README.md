@@ -1,7 +1,8 @@
 # AD INNOVATION SERVICES PLUS
 
 Site vitrine + back-office construits avec **Vue 3 (Vite)** et **Supabase**.
-Content taken from the handwritten business brief: 16 services, 3 phone numbers, email, Godomey location, and the "why choose us" arguments.
+Content taken from the business brief: 16 services, the phone numbers, email, the
+Ouanaminthe (Haïti) location, and the "why choose us" arguments.
 
 ---
 
@@ -55,7 +56,8 @@ Security model (from `schema.sql`):
   and quotes — with length/status guards so public inserts cannot forge a status or flood huge rows;
 - everything else (reading messages/quotes, all create/update/delete on content) requires membership
   of `public.admins`, checked by the `public.is_admin()` function;
-- there is **no public registration** in the app.
+- public sign-up exists at `/inscription`, but a new account is **not** an admin unless it is added
+  to `public.admins`.
 
 ## 3. Pages
 
@@ -148,8 +150,9 @@ it near 100 KB. Visitors who turned on the browser's "data saver" get the navy g
 src/
   lib/
     supabase.js      client + config detection
-    api.js           data layer (Supabase or localStorage fallback)
-    demoData.js      seed content from the brief
+    api.js           data layer (all reads/writes through Supabase)
+    brandDefaults.js fallback brand identity when site_settings is empty
+    serviceCategories.js reference list for the admin category field
     utils.js         phone/WhatsApp links, date & slug helpers
   composables/       useAuth, useSettings, useServices, useToast
   components/        AppHeader, AppFooter, ServiceCard, ModalDialog, toasts…
